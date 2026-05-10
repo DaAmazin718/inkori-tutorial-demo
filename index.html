@@ -1,0 +1,922 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Inkori — Tutorial System Demo</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --ink: #0D0B14;
+      --surface: #16141C;
+      --card: #1C1A22;
+      --card-strong: #201E28;
+      --dim: rgba(255,255,255,0.08);
+      --muted: rgba(255,255,255,0.35);
+      --purple: #4A3F8C;
+      --purple-light: #BDB5E8;
+      --purple-glow: #7C6AF5;
+      --amber: #C47B2B;
+      --amber-light: #E8C56A;
+      --green: #2D7A5C;
+      --green-light: #3D9E78;
+      --teal: #5EC4B6;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--ink);
+      color: #fff;
+      font-family: 'DM Sans', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── HERO ── */
+    .hero {
+      position: relative;
+      padding: 80px 40px 60px;
+      text-align: center;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -120px; left: 50%; transform: translateX(-50%);
+      width: 700px; height: 700px;
+      background: radial-gradient(circle, rgba(124,106,245,0.18) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px; border-radius: 100px;
+      background: rgba(124,106,245,0.12); border: 1px solid rgba(124,106,245,0.3);
+      font-size: 11px; font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
+      color: var(--purple-light); margin-bottom: 24px;
+    }
+    .hero h1 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: clamp(36px, 6vw, 64px);
+      font-weight: 700; line-height: 1.1; margin-bottom: 20px;
+      background: linear-gradient(135deg, #fff 30%, var(--purple-light) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      font-size: 16px; color: rgba(255,255,255,0.5); max-width: 560px;
+      margin: 0 auto 40px; line-height: 1.7;
+    }
+    .hero-cta {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 28px; border-radius: 100px;
+      background: var(--purple-glow); border: none;
+      color: #fff; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      box-shadow: 0 8px 30px rgba(124,106,245,0.4);
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .hero-cta:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,106,245,0.5); }
+
+    /* ── SECTION LABEL ── */
+    .section-label {
+      font-size: 10px; font-weight: 700; letter-spacing: 3px;
+      text-transform: uppercase; color: var(--muted); margin-bottom: 8px;
+    }
+
+    /* ── MAIN LAYOUT ── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 40px 80px; }
+
+    /* ── SECTION HEADING ── */
+    .section-heading {
+      margin-bottom: 32px; padding-top: 60px;
+    }
+    .section-heading h2 {
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 28px; font-weight: 700; color: #fff; margin-bottom: 8px;
+    }
+    .section-heading p { font-size: 14px; color: var(--muted); line-height: 1.6; }
+
+    /* ── DIVIDER ── */
+    .divider {
+      height: 1px; background: var(--dim); margin: 0 0 0;
+    }
+
+    /* ── INTERFACE MOCKUP CARDS ── */
+    .interface-grid {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 20px; margin-bottom: 60px;
+    }
+
+    .interface-card {
+      background: var(--card); border: 1px solid var(--dim);
+      border-radius: 18px; overflow: hidden;
+      transition: border-color 0.2s ease;
+    }
+    .interface-card:hover { border-color: rgba(124,106,245,0.3); }
+
+    .interface-card-header {
+      height: 44px; border-bottom: 1px solid var(--dim);
+      display: flex; align-items: center; padding: 0 16px; gap: 10px;
+      background: rgba(255,255,255,0.015);
+    }
+    .interface-card-title {
+      font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.5);
+      letter-spacing: 0.5px; flex: 1;
+    }
+
+    .interface-card-body { padding: 20px; }
+
+    /* ── MOCK TOOLBAR ── */
+    .mock-toolbar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 10px 14px; background: var(--card-strong);
+      border: 1px solid var(--dim); border-radius: 10px; margin-bottom: 16px;
+      flex-wrap: wrap;
+    }
+    .mock-tab {
+      padding: 5px 12px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      border: 1px solid transparent; cursor: default;
+    }
+    .mock-tab.active {
+      background: rgba(124,106,245,0.2); border-color: rgba(124,106,245,0.4);
+      color: var(--purple-light);
+    }
+    .mock-tab.inactive { color: var(--muted); }
+    .mock-spacer { flex: 1; }
+    .mock-btn {
+      padding: 5px 10px; border-radius: 6px; font-size: 11px; font-weight: 600;
+      border: 1px solid var(--dim); color: var(--muted); cursor: default;
+      background: rgba(255,255,255,0.04);
+    }
+
+    /* ── MOCK EDITOR ── */
+    .mock-editor {
+      background: transparent; border: 1px solid var(--dim);
+      border-radius: 8px; padding: 16px; min-height: 100px;
+      font-size: 13px; color: rgba(255,255,255,0.3); line-height: 1.8;
+      font-family: Georgia, serif; font-style: italic;
+    }
+
+    /* ── MOCK PANELS ── */
+    .mock-panels {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 6px;
+      height: 120px;
+    }
+    .mock-panel {
+      background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px; display: flex; align-items: center; justify-content: center;
+      font-size: 18px; opacity: 0.4;
+    }
+    .mock-panel.active {
+      border-color: rgba(124,106,245,0.5); opacity: 1;
+      background: rgba(124,106,245,0.08);
+    }
+
+    /* ── MOCK DASHBOARD CARDS ── */
+    .mock-dash-grid {
+      display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+    }
+    .mock-dash-card {
+      background: rgba(255,255,255,0.03); border: 1px solid var(--dim);
+      border-radius: 10px; padding: 12px;
+    }
+    .mock-dash-card-icon { font-size: 18px; margin-bottom: 6px; }
+    .mock-dash-card-label { font-size: 11px; font-weight: 600; color: rgba(255,255,255,0.6); }
+    .mock-dash-card-sub { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    /* ── TUTORIAL BUTTON STYLES ── */
+    .tut-btn-pill {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 6px 12px; border-radius: 100px;
+      background: rgba(124,106,245,0.1); border: 1px solid rgba(124,106,245,0.25);
+      color: var(--purple-light); font-size: 11px; font-weight: 600;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.15s ease; letter-spacing: 0.3px;
+    }
+    .tut-btn-pill:hover {
+      background: rgba(124,106,245,0.2); border-color: rgba(124,106,245,0.5);
+      transform: translateY(-1px);
+    }
+    .tut-btn-icon {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.35); font-size: 13px; font-weight: 700;
+      cursor: pointer; font-family: inherit;
+      transition: all 0.15s ease;
+    }
+    .tut-btn-icon:hover {
+      background: rgba(124,106,245,0.15); border-color: rgba(124,106,245,0.4);
+      color: var(--purple-light);
+    }
+
+    /* ── FEATURE CALLOUT ── */
+    .feature-row {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 60px;
+    }
+    @media (max-width: 720px) { .feature-row { grid-template-columns: 1fr; } }
+
+    .feature-card {
+      background: var(--card); border: 1px solid var(--dim);
+      border-radius: 16px; padding: 24px;
+    }
+    .feature-card-icon {
+      width: 44px; height: 44px; border-radius: 12px;
+      background: rgba(124,106,245,0.12); border: 1px solid rgba(124,106,245,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; margin-bottom: 14px;
+    }
+    .feature-card h3 { font-size: 15px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .feature-card p { font-size: 13px; color: var(--muted); line-height: 1.65; }
+
+    /* ── STEP PREVIEW ── */
+    .step-preview {
+      background: var(--card-strong); border: 1px solid var(--dim);
+      border-radius: 14px; overflow: hidden; margin-bottom: 60px;
+    }
+    .step-preview-header {
+      padding: 20px 24px 0; display: flex; align-items: flex-start;
+      justify-content: space-between;
+    }
+    .step-preview-progress {
+      padding: 14px 24px 0; display: flex; gap: 4px;
+    }
+    .progress-seg {
+      flex: 1; height: 3px; border-radius: 2px;
+      transition: background 0.2s ease;
+    }
+    .progress-seg.filled { background: var(--purple-glow); }
+    .progress-seg.empty { background: rgba(255,255,255,0.08); }
+    .step-preview-body { padding: 20px 24px; }
+    .step-icon-title {
+      display: flex; align-items: center; gap: 12px; margin-bottom: 14px;
+    }
+    .step-icon {
+      width: 44px; height: 44px; border-radius: 12px; flex-shrink: 0;
+      background: rgba(124,106,245,0.12); border: 1px solid rgba(124,106,245,0.2);
+      display: flex; align-items: center; justify-content: center; font-size: 22px;
+    }
+    .step-title { font-size: 18px; font-weight: 700; color: #fff; }
+    .step-body { font-size: 13px; color: rgba(255,255,255,0.65); line-height: 1.75; margin-bottom: 14px; white-space: pre-line; }
+    .step-highlight {
+      display: flex; gap: 8px; align-items: flex-start;
+      padding: 10px 12px; border-radius: 8px; margin-bottom: 12px;
+      background: rgba(124,106,245,0.08); border: 1px solid rgba(124,106,245,0.2);
+    }
+    .step-highlight p { font-size: 11px; color: rgba(189,181,232,0.8); line-height: 1.6; }
+    .step-tip {
+      display: flex; gap: 8px; align-items: flex-start;
+      padding: 10px 12px; border-radius: 8px;
+      background: rgba(232,197,106,0.06); border: 1px solid rgba(232,197,106,0.15);
+    }
+    .step-tip p { font-size: 11px; color: rgba(255,255,255,0.55); line-height: 1.6; }
+    .step-preview-nav {
+      padding: 0 24px 20px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12;
+    }
+    .nav-btn {
+      padding: 9px 18px; border-radius: 10px; font-size: 12px; font-weight: 600;
+      cursor: pointer; font-family: inherit; transition: all 0.15s ease;
+    }
+    .nav-btn.back {
+      background: transparent; border: 1px solid rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.5);
+    }
+    .nav-btn.back:disabled { color: rgba(255,255,255,0.2); cursor: not-allowed; }
+    .nav-btn.next {
+      background: rgba(124,106,245,0.9); border: 1px solid rgba(124,106,245,0.5);
+      color: #fff;
+    }
+    .nav-btn.done {
+      background: linear-gradient(135deg, rgba(94,196,182,0.9), rgba(124,106,245,0.9));
+      border: none; color: #fff;
+    }
+    .nav-hint { font-size: 10px; color: rgba(255,255,255,0.2); }
+
+    /* ── MODAL OVERLAY ── */
+    .modal-backdrop {
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.75); backdrop-filter: blur(4px);
+      z-index: 9998; display: none;
+    }
+    .modal-backdrop.open { display: block; }
+
+    .tutorial-modal {
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: calc(100% - 32px); max-width: 520px;
+      background: rgba(22,20,28,0.98);
+      border: 1px solid rgba(189,181,232,0.2);
+      border-radius: 20px;
+      box-shadow: 0 24px 80px rgba(0,0,0,0.7), 0 0 0 1px rgba(124,106,245,0.15);
+      z-index: 9999; overflow: hidden;
+      display: none;
+    }
+    .tutorial-modal.open { display: block; }
+
+    .modal-top-bar {
+      height: 3px;
+      background: linear-gradient(90deg, #7C6AF5, #BDB5E8, #5EC4B6);
+    }
+    .modal-header {
+      padding: 20px 24px 0; display: flex; align-items: flex-start;
+      justify-content: space-between;
+    }
+    .modal-header-text p:first-child {
+      font-size: 10px; font-weight: 700; letter-spacing: 2.5px;
+      text-transform: uppercase; color: var(--purple-light); margin-bottom: 4px;
+    }
+    .modal-header-text p:last-child {
+      font-size: 13px; color: rgba(255,255,255,0.45); line-height: 1.4;
+    }
+    .modal-close {
+      width: 28px; height: 28px; border-radius: 50%;
+      border: 1px solid rgba(255,255,255,0.1);
+      background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4);
+      font-size: 14px; cursor: pointer; font-family: inherit; flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .modal-progress { padding: 14px 24px 0; }
+    .modal-progress-bar { display: flex; gap: 4px; }
+    .modal-progress-seg {
+      flex: 1; height: 3px; border-radius: 2px; border: none;
+      cursor: pointer; transition: background 0.2s ease;
+    }
+    .modal-step-count {
+      font-size: 10px; color: rgba(255,255,255,0.25);
+      margin-top: 6px; text-align: right;
+    }
+    .modal-body { padding: 20px 24px; }
+    .modal-nav {
+      padding: 0 24px 20px; display: flex; align-items: center;
+      justify-content: space-between; gap: 12px;
+    }
+
+    /* ── PLACEMENT MAP ── */
+    .placement-map {
+      background: var(--card); border: 1px solid var(--dim);
+      border-radius: 16px; padding: 28px; margin-bottom: 60px;
+    }
+    .placement-map h3 {
+      font-size: 16px; font-weight: 700; color: #fff; margin-bottom: 20px;
+    }
+    .placement-table { width: 100%; border-collapse: collapse; }
+    .placement-table th {
+      font-size: 10px; font-weight: 700; letter-spacing: 2px;
+      text-transform: uppercase; color: var(--muted);
+      padding: 0 12px 12px; text-align: left; border-bottom: 1px solid var(--dim);
+    }
+    .placement-table td {
+      padding: 12px; font-size: 13px; color: rgba(255,255,255,0.7);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      vertical-align: middle;
+    }
+    .placement-table tr:last-child td { border-bottom: none; }
+    .placement-table td:first-child { font-weight: 600; color: #fff; }
+    .badge {
+      display: inline-block; padding: 3px 8px; border-radius: 100px;
+      font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+    }
+    .badge-pill { background: rgba(124,106,245,0.15); color: var(--purple-light); border: 1px solid rgba(124,106,245,0.25); }
+    .badge-icon { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.4); border: 1px solid var(--dim); }
+    .step-count-badge {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 22px; height: 22px; border-radius: 50%;
+      background: rgba(124,106,245,0.15); color: var(--purple-light);
+      font-size: 11px; font-weight: 700;
+    }
+
+    /* ── FOOTER ── */
+    .footer {
+      border-top: 1px solid var(--dim); padding: 32px 40px;
+      text-align: center; color: var(--muted); font-size: 12px;
+    }
+    .footer strong { color: var(--purple-light); }
+
+    /* ── ANIMATIONS ── */
+    @keyframes fadeIn { from { opacity: 0; transform: translate(-50%, -48%); } to { opacity: 1; transform: translate(-50%, -50%); } }
+    .tutorial-modal.open { animation: fadeIn 0.2s ease; }
+
+    @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .animate-in { animation: slideUp 0.4s ease both; }
+    .delay-1 { animation-delay: 0.1s; }
+    .delay-2 { animation-delay: 0.2s; }
+    .delay-3 { animation-delay: 0.3s; }
+  </style>
+</head>
+<body>
+
+<!-- ── HERO ── -->
+<section class="hero">
+  <div class="hero-badge">✦ New Feature</div>
+  <h1>Inkori Tutorial System</h1>
+  <p>Every interface now has a built-in step-by-step guide. No more guessing how to switch modes, use panels, or navigate the workspace.</p>
+  <a href="#demo" class="hero-cta">▶ See it in action</a>
+</section>
+
+<div class="container" id="demo">
+
+  <!-- ── SECTION: WHAT IS IT ── -->
+  <div class="section-heading animate-in">
+    <p class="section-label">Overview</p>
+    <h2>What the Tutorial System Does</h2>
+    <p>A small tutorial button now lives in every major interface. Click it to open a step-by-step modal that walks you through exactly how that section works — with tips, keyboard shortcuts, and callouts pointing to specific UI elements.</p>
+  </div>
+
+  <div class="feature-row animate-in delay-1">
+    <div class="feature-card">
+      <div class="feature-card-icon">📖</div>
+      <h3>Step-by-Step Walkthroughs</h3>
+      <p>Each tutorial is broken into focused steps — one concept at a time. Navigate forward and back, or jump to any step by clicking the progress bar.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">👆</div>
+      <h3>Highlight Callouts</h3>
+      <p>Steps that reference a specific button or UI element show a purple callout saying "Look for: X" so you know exactly where to look on screen.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">💡</div>
+      <h3>Pro Tips on Every Step</h3>
+      <p>Each step includes an amber tip box with insider knowledge — keyboard shortcuts, best practices, and things that aren't obvious from the UI alone.</p>
+    </div>
+    <div class="feature-card">
+      <div class="feature-card-icon">⌨️</div>
+      <h3>Keyboard Navigation</h3>
+      <p>Use ← → arrow keys to move between steps. Press Escape to close. The modal remembers where you left off within a session.</p>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── SECTION: LIVE INTERFACES ── -->
+  <div class="section-heading animate-in">
+    <p class="section-label">Live Demo</p>
+    <h2>Tutorial Buttons in Context</h2>
+    <p>Each interface below shows exactly where the tutorial button lives and what it looks like. Click any button to launch the real tutorial modal.</p>
+  </div>
+
+  <div class="interface-grid">
+
+    <!-- Story Mode -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:10px;color:var(--muted)">Story Mode</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.2)">›</span>
+        <span style="font-size:10px;color:var(--purple-light);font-weight:600">The Hollow King</span>
+        <div class="mock-spacer"></div>
+        <button class="tut-btn-pill" onclick="openTutorial('story_editor')">📖 Story Mode Tour</button>
+      </div>
+      <div class="interface-card-body">
+        <div class="mock-toolbar">
+          <span class="mock-tab active">Prose</span>
+          <span class="mock-tab inactive">Script</span>
+          <span class="mock-tab inactive">Outline</span>
+          <span class="mock-tab inactive">Panel Notes</span>
+          <span class="mock-tab inactive">Beat Map</span>
+          <div class="mock-spacer"></div>
+          <span class="mock-btn">🎙</span>
+          <span class="mock-btn">⚡ Inkori</span>
+          <button class="tut-btn-icon" onclick="openTutorial('story_editor')" title="How to use Story Mode">?</button>
+        </div>
+        <div class="mock-editor">The morning fog clung to the valley like a secret no one wanted to keep. Kael stood at the ridge, watching the smoke rise from what used to be the village of Ashfen…</div>
+        <p style="font-size:11px;color:var(--muted);margin-top:10px;">↑ Click either tutorial button above to launch the Story Mode walkthrough</p>
+      </div>
+    </div>
+
+    <!-- Manga Mode -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:10px;color:var(--muted)">Manga Mode</span>
+        <span style="font-size:10px;color:rgba(255,255,255,0.2)">›</span>
+        <span style="font-size:10px;color:var(--purple-light);font-weight:600">The Hollow King</span>
+        <div class="mock-spacer"></div>
+        <button class="tut-btn-pill" onclick="openTutorial('manga_editor')">📖 How to use Manga Mode</button>
+        <span class="mock-btn" style="margin-left:4px">⊞ Layout</span>
+      </div>
+      <div class="interface-card-body">
+        <div class="mock-panels">
+          <div class="mock-panel active">🎥</div>
+          <div class="mock-panel">📐</div>
+          <div class="mock-panel">💬</div>
+          <div class="mock-panel">😤</div>
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:12px;">↑ The highlighted panel is selected — right sidebar shows its settings</p>
+      </div>
+    </div>
+
+    <!-- Dashboard -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:10px;color:var(--purple-light);font-weight:600">Dashboard</span>
+        <div class="mock-spacer"></div>
+        <button class="tut-btn-pill" onclick="openTutorial('dashboard')">📖 Dashboard Tour</button>
+        <span class="mock-btn" style="margin-left:4px">?</span>
+        <span class="mock-btn" style="background:var(--purple-glow);color:#fff;border-color:transparent">+ New Story</span>
+      </div>
+      <div class="interface-card-body">
+        <div class="mock-dash-grid">
+          <div class="mock-dash-card">
+            <div class="mock-dash-card-icon" style="color:#3D9E78">✍</div>
+            <div class="mock-dash-card-label">Story Mode</div>
+            <div class="mock-dash-card-sub">Write your next chapter</div>
+          </div>
+          <div class="mock-dash-card">
+            <div class="mock-dash-card-icon" style="color:#E0B074">🖼</div>
+            <div class="mock-dash-card-label">Picture Book</div>
+            <div class="mock-dash-card-sub">Create illustrated pages</div>
+          </div>
+          <div class="mock-dash-card">
+            <div class="mock-dash-card-icon" style="color:#BDB5E8">⊞</div>
+            <div class="mock-dash-card-label">Manga Mode</div>
+            <div class="mock-dash-card-sub">Build your panels</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Picture Book -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:10px;font-weight:700;letter-spacing:2px;color:var(--amber);text-transform:uppercase">Picture Book Mode</span>
+        <div class="mock-spacer"></div>
+        <button class="tut-btn-pill" onclick="openTutorial('picture_book')">📖 How to use Picture Book</button>
+      </div>
+      <div class="interface-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--dim);border-radius:8px;padding:10px;">
+            <div style="font-size:11px;color:#fff;margin-bottom:4px;">Full Image + Bottom Text</div>
+            <div style="font-size:10px;color:var(--muted);">One strong illustration with a short caption.</div>
+          </div>
+          <div style="background:rgba(255,255,255,0.03);border:1px solid var(--dim);border-radius:8px;padding:10px;">
+            <div style="font-size:11px;color:#fff;margin-bottom:4px;">Full Bleed Spread</div>
+            <div style="font-size:10px;color:var(--muted);">Wide visual moment, minimal text.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chapter Editor -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:13px;color:rgba(255,255,255,0.5)">← Back</span>
+        <span style="color:rgba(255,255,255,0.12)">|</span>
+        <span style="font-size:13px;font-weight:500;color:#fff">Chapter 1 — The Ridge</span>
+        <div class="mock-spacer"></div>
+        <span class="mock-btn">📋 Brief</span>
+        <span class="mock-btn">⚔ Canon Guard</span>
+        <button class="tut-btn-icon" onclick="openTutorial('chapter_editor')" title="How to use Chapter Editor">?</button>
+        <span class="mock-btn" style="background:rgba(74,63,140,0.45);color:#BDB5E8;border-color:rgba(189,181,232,0.35)">✦ Inkori</span>
+      </div>
+      <div class="interface-card-body">
+        <div style="font-size:13px;color:rgba(255,255,255,0.25);font-family:Georgia,serif;font-style:italic;line-height:1.8;padding:8px 0;">
+          Begin your chapter here…
+        </div>
+        <p style="font-size:11px;color:var(--muted);margin-top:8px;">↑ The ? button in the toolbar opens the Chapter Editor tutorial</p>
+      </div>
+    </div>
+
+    <!-- Characters -->
+    <div class="interface-card">
+      <div class="interface-card-header">
+        <span style="font-size:10px;color:var(--muted)">Characters</span>
+        <div class="mock-spacer"></div>
+        <button class="tut-btn-pill" onclick="openTutorial('characters')">📖 Character Guide</button>
+      </div>
+      <div class="interface-card-body">
+        <div style="display:flex;gap:10px;align-items:center;padding:10px;background:rgba(255,255,255,0.03);border:1px solid var(--dim);border-radius:10px;">
+          <div style="width:40px;height:40px;border-radius:50%;background:rgba(124,106,245,0.2);border:1px solid rgba(124,106,245,0.3);display:flex;align-items:center;justify-content:center;font-size:18px;">👤</div>
+          <div>
+            <div style="font-size:13px;font-weight:600;color:#fff;">Kael</div>
+            <div style="font-size:11px;color:var(--muted);">Style Lock: Not set · Score: 42%</div>
+          </div>
+          <div class="mock-spacer"></div>
+          <span style="font-size:10px;padding:3px 8px;border-radius:100px;background:rgba(196,123,43,0.15);color:#E8C56A;border:1px solid rgba(196,123,43,0.3);">Incomplete</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── SECTION: STEP PREVIEW ── -->
+  <div class="section-heading animate-in">
+    <p class="section-label">Inside the Modal</p>
+    <h2>Story Mode — Step 2 of 8</h2>
+    <p>This is what the tutorial modal looks like from the inside. The purple progress bar tracks your position. Each step has a title, explanation, highlight callout, and pro tip.</p>
+  </div>
+
+  <!-- Static step preview -->
+  <div class="step-preview animate-in delay-1">
+    <div class="modal-top-bar"></div>
+    <div class="modal-header">
+      <div class="modal-header-text">
+        <p>Tutorial · Story Mode</p>
+        <p>Your complete writing workspace — 5 views, one story.</p>
+      </div>
+      <button class="modal-close" style="cursor:default">✕</button>
+    </div>
+    <div class="modal-progress">
+      <div class="modal-progress-bar">
+        <div class="modal-progress-seg" style="background:var(--purple-glow)"></div>
+        <div class="modal-progress-seg" style="background:var(--purple-glow)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+        <div class="modal-progress-seg" style="background:rgba(255,255,255,0.08)"></div>
+      </div>
+      <p class="modal-step-count">Step 2 of 8</p>
+    </div>
+    <div class="modal-body">
+      <div class="step-icon-title">
+        <div class="step-icon">🎬</div>
+        <h3 class="step-title">Switch to Script Mode</h3>
+      </div>
+      <p class="step-body">Click the "Script" button in the top toolbar (or press ⌘2 on Mac / Ctrl+2 on Windows). Script Mode formats your writing like a screenplay — Scene Headings, Action lines, Character names, and Dialogue blocks.</p>
+      <div class="step-highlight">
+        <span style="font-size:12px;color:var(--purple-light);flex-shrink:0;margin-top:1px">👆</span>
+        <p><strong style="color:var(--purple-light)">Look for:</strong> Script button in the toolbar</p>
+      </div>
+      <div class="step-tip">
+        <span style="font-size:12px;color:var(--amber-light);flex-shrink:0;margin-top:1px">💡</span>
+        <p>Press Tab inside Script Mode to cycle through block types: Scene → Action → Character → Dialogue → Parenthetical → Transition.</p>
+      </div>
+    </div>
+    <div class="modal-nav">
+      <button class="nav-btn back" style="cursor:default">← Back</button>
+      <p class="nav-hint">← → arrow keys to navigate</p>
+      <button class="nav-btn next" style="cursor:default">Next →</button>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ── SECTION: PLACEMENT MAP ── -->
+  <div class="section-heading animate-in">
+    <p class="section-label">Coverage Map</p>
+    <h2>Every Tutorial Button, Every Location</h2>
+    <p>Here's the complete map of where tutorial buttons were added across the Inkori interface.</p>
+  </div>
+
+  <div class="placement-map animate-in delay-1">
+    <table class="placement-table">
+      <thead>
+        <tr>
+          <th>Location</th>
+          <th>Button Style</th>
+          <th>Steps</th>
+          <th>Key Topics Covered</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Dashboard Header</td>
+          <td><span class="badge badge-pill">📖 Dashboard Tour</span></td>
+          <td><span class="step-count-badge">7</span></td>
+          <td style="color:var(--muted)">All 6 quick-access cards, projects section, new story flow</td>
+        </tr>
+        <tr>
+          <td>Story Mode Index</td>
+          <td><span class="badge badge-pill">📖 Story Mode Tour</span></td>
+          <td><span class="step-count-badge">8</span></td>
+          <td style="color:var(--muted)">All 5 writing modes, keyboard shortcuts, AI panel, voice input</td>
+        </tr>
+        <tr>
+          <td>Story Editor Toolbar</td>
+          <td><span class="badge badge-icon">?</span></td>
+          <td><span class="step-count-badge">8</span></td>
+          <td style="color:var(--muted)">Same 8-step guide, accessible while actively writing</td>
+        </tr>
+        <tr>
+          <td>Manga Mode Index</td>
+          <td><span class="badge badge-pill">📖 Manga Mode Tour</span></td>
+          <td><span class="step-count-badge">7</span></td>
+          <td style="color:var(--muted)">Pages, layouts, panel selection, camera angles, expressions, dialogue</td>
+        </tr>
+        <tr>
+          <td>Manga Editor Toolbar</td>
+          <td><span class="badge badge-pill">📖 How to use Manga Mode</span></td>
+          <td><span class="step-count-badge">7</span></td>
+          <td style="color:var(--muted)">Same 7-step guide, accessible while building panels</td>
+        </tr>
+        <tr>
+          <td>Picture Book Page</td>
+          <td><span class="badge badge-pill">📖 How to use Picture Book</span></td>
+          <td><span class="step-count-badge">4</span></td>
+          <td style="color:var(--muted)">Layout options, text length, visual prompt writing</td>
+        </tr>
+        <tr>
+          <td>Chapter Editor Toolbar</td>
+          <td><span class="badge badge-icon">?</span></td>
+          <td><span class="step-count-badge">3</span></td>
+          <td style="color:var(--muted)">Scene management, Chapter Brief, Canon Guard</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="footer">
+  <strong>Inkori Studio</strong> — Tutorial System · Commit <code style="background:rgba(255,255,255,0.06);padding:2px 6px;border-radius:4px;font-size:11px;">27633c0</code> · Deployed to main
+</div>
+
+<!-- ── TUTORIAL MODAL ── -->
+<div class="modal-backdrop" id="backdrop" onclick="closeTutorial()"></div>
+<div class="tutorial-modal" id="tutorialModal">
+  <div class="modal-top-bar"></div>
+  <div class="modal-header">
+    <div class="modal-header-text">
+      <p id="modalSectionLabel">Tutorial · Story Mode</p>
+      <p id="modalSubtitle">Your complete writing workspace.</p>
+    </div>
+    <button class="modal-close" onclick="closeTutorial()">✕</button>
+  </div>
+  <div class="modal-progress">
+    <div class="modal-progress-bar" id="progressBar"></div>
+    <p class="modal-step-count" id="stepCount">Step 1 of 8</p>
+  </div>
+  <div class="modal-body" id="modalBody"></div>
+  <div class="modal-nav">
+    <button class="nav-btn back" id="backBtn" onclick="prevStep()">← Back</button>
+    <p class="nav-hint">← → arrow keys</p>
+    <button class="nav-btn next" id="nextBtn" onclick="nextStep()">Next →</button>
+  </div>
+</div>
+
+<script>
+const TUTORIALS = {
+  story_editor: {
+    title: 'Story Mode',
+    subtitle: 'Your complete writing workspace — 5 views, one story.',
+    steps: [
+      { icon: '✍️', title: 'Start in Prose', body: 'Prose is your default writing mode — it\'s a clean, distraction-free text editor. Write your scene naturally here first. Everything starts in Prose.', tip: 'Think of Prose as your raw creative space. No formatting rules, just your words.', highlight: 'Prose button in the toolbar' },
+      { icon: '🎬', title: 'Switch to Script Mode', body: 'Click the "Script" button in the top toolbar (or press ⌘2 on Mac / Ctrl+2 on Windows). Script Mode formats your writing like a screenplay — Scene Headings, Action lines, Character names, and Dialogue blocks.', tip: 'Press Tab inside Script Mode to cycle through block types: Scene → Action → Character → Dialogue → Parenthetical → Transition.', highlight: 'Script button in the toolbar' },
+      { icon: '📋', title: 'Outline Mode', body: 'Click "Outline" in the toolbar (or ⌘3). This gives you a structured breakdown of your scene with sections and bullet beats. Great for planning before you write or reviewing after.', tip: 'If you already wrote in Prose, click "Convert with Inkori →" to auto-generate an outline from your prose.', highlight: 'Outline button in the toolbar' },
+      { icon: '📐', title: 'Panel Notes Mode', body: 'Click "Panel Notes" (or ⌘4). This is for visual storytellers — write panel-by-panel directions including shot type, characters, and what\'s happening. These notes feed directly into Manga Mode.', tip: 'Panel Notes are the bridge between writing and drawing. Use them to plan your manga pages.', highlight: 'Panel Notes button in the toolbar' },
+      { icon: '📊', title: 'Beat Map Mode', body: 'Click "Beat Map" (or ⌘5). A Beat Map breaks your scene into emotional beats — each beat has a label, description, and emotional tone. Perfect for pacing and story structure.', tip: 'Use Beat Map to check if your scene has the right emotional arc before you finalize it.', highlight: 'Beat Map button in the toolbar' },
+      { icon: '⌨️', title: 'Keyboard Shortcuts', body: 'Switch modes instantly without clicking:\n• ⌘1 (Ctrl+1) → Prose\n• ⌘2 (Ctrl+2) → Script\n• ⌘3 (Ctrl+3) → Outline\n• ⌘4 (Ctrl+4) → Panel Notes\n• ⌘5 (Ctrl+5) → Beat Map\n• ⌘S (Ctrl+S) → Save\n• ⌘⇧K → Toggle AI panel', tip: 'Your content is saved separately per mode — switching modes never loses your work.' },
+      { icon: '⚡', title: 'The AI Panel (Right Side)', body: 'The right panel is your Inkori AI partner. It\'s always watching your story. Ask it anything: "Write the next paragraph," "Give me dialogue for this scene," or "What\'s wrong with my pacing?" Click the ⚡ button in the toolbar to show or hide it.', tip: 'After the AI responds, click "↓ Add to story" to insert its output directly into your current writing mode.' },
+      { icon: '🎙️', title: 'Voice Input', body: 'See the microphone button in the toolbar? Click it to dictate your writing out loud. There\'s also a mic in the AI chat panel — use that to speak your questions to the AI instead of typing.', tip: 'Voice input works best in a quiet environment. Speak naturally and Inkori will transcribe.' },
+    ]
+  },
+  manga_editor: {
+    title: 'Manga Mode',
+    subtitle: 'Build panel-by-panel visual direction for your manga.',
+    steps: [
+      { icon: '📄', title: 'Pages & the Page Rail', body: 'The left column shows your manga pages as thumbnails. Click any page to open it. Use "+ Add Page" at the bottom to add more pages. Each page holds multiple panels.', tip: 'You can delete a page by clicking the trash icon that appears when you hover over it.' },
+      { icon: '🔲', title: 'Choose a Layout First', body: 'Before adding content, click "Layout" in the top toolbar to pick a panel grid. Options include 1×1 (single panel), 2×1 (two panels side by side), 2×2 (four panels), and more. The layout sets your page canvas.', tip: 'You can change the layout after adding content, but your panel assignments will reset — so pick your layout first.', highlight: 'Layout button in the top toolbar' },
+      { icon: '🖱️', title: 'Click a Panel to Select It', body: 'Click any panel on the canvas to select it. A selected panel gets a purple highlight border. Once selected, the right sidebar fills in with all the editing tools for that panel.', tip: 'Nothing in the right sidebar will work until you click a panel to select it.', highlight: 'Panel canvas area' },
+      { icon: '🎥', title: 'Camera Angle & Pose', body: 'In the right sidebar, set the Camera Angle (Close-Up, Wide Shot, Bird\'s Eye, etc.) and the character Pose (Standing, Action, Sitting, etc.). These feed directly into the AI image generation prompt.', tip: 'Be specific with camera angles — "Extreme Close-Up" creates a very different panel than "Wide Shot."' },
+      { icon: '😤', title: 'Expression Chips', body: 'In the right sidebar, you\'ll see expression chips like "Determined," "Shocked," "Crying," and more. Click a chip to add it to the panel. These tell the AI what emotion the character should show.', tip: 'You can add multiple expression chips — but keep it to 1–2 for clarity.', highlight: 'Expression chips in the right sidebar' },
+      { icon: '💬', title: 'Dialogue Bubbles', body: 'Scroll down in the right sidebar to find the Dialogue section. Click "+ Add Dialogue" to create a speech bubble, thought bubble, or narration box. Type the text and choose the bubble type.', tip: 'SFX (sound effects like CRASH or BOOM) use their own bubble type — select "sfx" from the type dropdown.', highlight: 'Dialogue section in the right sidebar' },
+      { icon: '🎨', title: 'Generate Visual (Coming Soon)', body: 'The "Generate Visual" button at the bottom of the right sidebar will send all your panel settings to the AI to generate the actual panel image. This feature requires INK credits and is coming soon for free users.', tip: 'Fill in as much detail as possible before generating — the more direction you give, the better the result.' },
+    ]
+  },
+  picture_book: {
+    title: 'Picture Book Mode',
+    subtitle: 'Create illustrated page spreads for any age.',
+    steps: [
+      { icon: '📖', title: 'What is Picture Book Mode?', body: 'Picture Book Mode is designed for page-based illustrated stories — children\'s books, gifts, classroom projects, or any visual narrative that pairs short text with full illustrations.', tip: 'Start a new story first from the Dashboard, then open it in Picture Book Mode.' },
+      { icon: '🖼️', title: 'Page Layout Options', body: 'Each page can use one of four layouts:\n• Full Image + Bottom Text — illustration fills the page, text sits below\n• Top Text + Illustration — text at top, image below\n• Full Bleed Spread — image fills the entire page, no text border\n• Spot Illustration + Paragraph — smaller image beside a text block', tip: 'Full Bleed Spread works best for dramatic or emotional moments.' },
+      { icon: '✏️', title: 'Keep Text Short', body: 'Picture Book Mode is visual-first. Each page should have 1–3 short sentences maximum. The illustration carries the story — your text sets the scene or emotion.', tip: 'Read your page text aloud. If it takes more than 5 seconds to read, it\'s probably too long.' },
+      { icon: '🎨', title: 'Visual Prompts', body: 'For each page, write a visual prompt describing what the illustration should show. Be specific: "A small girl with red boots standing in a sunlit forest, looking up at a giant oak tree" is much better than "girl in forest."', tip: 'Include mood, lighting, and character details in your visual prompt for the best results.' },
+    ]
+  },
+  dashboard: {
+    title: 'Dashboard',
+    subtitle: 'Your creative home base — everything starts here.',
+    steps: [
+      { icon: '🏠', title: 'Welcome to Your Dashboard', body: 'The dashboard is your main hub. From here you can start new projects, jump back into existing ones, and access every part of Inkori. Think of it as your creative command center.', tip: 'Your most recently updated projects appear at the top of the Projects section.' },
+      { icon: '📝', title: 'Story Mode Card', body: 'Click the "Story Mode" card to go to your story projects. From there you can open an existing story or create a new one. Story Mode is where all writing happens.', highlight: 'Story Mode card' },
+      { icon: '🖼️', title: 'Picture Book Card', body: 'Click "Picture Book" to enter picture book creation mode. This is separate from Story Mode — it\'s optimized for illustrated page spreads with short text.', highlight: 'Picture Book card' },
+      { icon: '📐', title: 'Manga Mode Card', body: 'Click "Manga Mode" to open your manga projects. You\'ll need to have a story project first — Manga Mode reads your panel notes and story content to help you build panels.', highlight: 'Manga Mode card' },
+      { icon: '📚', title: 'Creative Bible Card', body: 'The Creative Bible stores all your world rules, canon, character relationships, and lore. Inkori uses this as its source of truth when checking for story contradictions.', highlight: 'Creative Bible card' },
+      { icon: '👤', title: 'Characters Card', body: 'Click "Characters" to manage all your characters. You can create detailed character sheets and upload reference art to activate Style Lock — which keeps characters visually consistent across all generated panels.', highlight: 'Characters card' },
+      { icon: '⚡', title: 'Your Projects Section', body: 'Below the quick-access cards, you\'ll see all your active story projects. Each card has three shortcuts: "Write" (opens the editor), "Bible" (opens the story\'s bible), and "Stats" (coming soon).', tip: 'Click "+ New Story" in the top right to start a brand new project.' },
+    ]
+  },
+  characters: {
+    title: 'Characters',
+    subtitle: 'Build the people who carry your story.',
+    steps: [
+      { icon: '👤', title: 'Character Sheets', body: 'Each character has a full sheet with 6 sections: Identity, Appearance, Personality, Lore & Notes, Art Upload, and Review. Fill out as much as you can — the more detail, the better the AI understands your character.', tip: 'You can jump to the Review tab at any time to see your completion score.' },
+      { icon: '🎨', title: 'Style Lock', body: 'Upload at least 3 reference images (front view, side view, and an expression sheet) in the Art Upload tab. Once uploaded, click "Extract Style Lock" in the Review tab to lock your character\'s visual style.', tip: 'Style Lock needs front, side, and back angles at minimum. More references = more consistent results.', highlight: 'Art Upload tab' },
+      { icon: '✅', title: 'Review Tab', body: 'The Review tab scores your character sheet and tells you exactly what\'s missing. A higher score means Inkori can generate more consistent and accurate results for that character.', tip: 'A score of 80%+ is recommended before using a character in Manga Mode generation.' },
+    ]
+  },
+  chapter_editor: {
+    title: 'Chapter Editor',
+    subtitle: 'Manage scenes, run Canon Guard, and generate briefs.',
+    steps: [
+      { icon: '📄', title: 'Scenes in a Chapter', body: 'Each chapter is made up of scenes. Click any scene in the left panel to open it in the editor. Use "+ New Scene" to add more scenes to the chapter.', tip: 'Keep scenes focused — one scene = one location or one continuous action.' },
+      { icon: '📋', title: 'Chapter Brief', body: 'The "Brief" button generates a structured summary of the chapter. You can generate it in Story, Manga, or Picture Book format. Use this to quickly review what happened in a chapter.', tip: 'Chapter briefs are great for sharing with collaborators or reviewing before writing the next chapter.', highlight: 'Brief button in the toolbar' },
+      { icon: '⚖️', title: 'Canon Guard', body: 'The Canon Guard button runs a check on the entire chapter against your Creative Bible rules. It will flag any contradictions with severity levels (low, medium, high) and confidence scores.', tip: 'Run Canon Guard after finishing a chapter draft, before moving on to the next one.', highlight: 'Canon Guard button' },
+    ]
+  },
+}
+
+let currentSection = null
+let currentStep = 0
+
+function openTutorial(section) {
+  currentSection = section
+  currentStep = 0
+  document.getElementById('backdrop').classList.add('open')
+  document.getElementById('tutorialModal').classList.add('open')
+  renderStep()
+}
+
+function closeTutorial() {
+  document.getElementById('backdrop').classList.remove('open')
+  document.getElementById('tutorialModal').classList.remove('open')
+}
+
+function renderStep() {
+  const t = TUTORIALS[currentSection]
+  const step = t.steps[currentStep]
+  const total = t.steps.length
+
+  document.getElementById('modalSectionLabel').textContent = `Tutorial · ${t.title}`
+  document.getElementById('modalSubtitle').textContent = t.subtitle
+  document.getElementById('stepCount').textContent = `Step ${currentStep + 1} of ${total}`
+
+  // Progress bar
+  const bar = document.getElementById('progressBar')
+  bar.innerHTML = t.steps.map((_, i) => `
+    <button class="modal-progress-seg" onclick="jumpStep(${i})"
+      style="background:${i <= currentStep ? '#7C6AF5' : 'rgba(255,255,255,0.08)'}"></button>
+  `).join('')
+
+  // Body
+  const highlightHtml = step.highlight ? `
+    <div class="step-highlight">
+      <span style="font-size:12px;color:#BDB5E8;flex-shrink:0;margin-top:1px">👆</span>
+      <p><strong style="color:#BDB5E8">Look for:</strong> ${step.highlight}</p>
+    </div>
+  ` : ''
+
+  const tipHtml = step.tip ? `
+    <div class="step-tip">
+      <span style="font-size:12px;color:#E8C56A;flex-shrink:0;margin-top:1px">💡</span>
+      <p>${step.tip}</p>
+    </div>
+  ` : ''
+
+  document.getElementById('modalBody').innerHTML = `
+    <div class="step-icon-title">
+      <div class="step-icon">${step.icon}</div>
+      <h3 class="step-title">${step.title}</h3>
+    </div>
+    <p class="step-body">${step.body.replace(/\n/g, '<br>')}</p>
+    ${highlightHtml}
+    ${tipHtml}
+  `
+
+  // Nav buttons
+  const backBtn = document.getElementById('backBtn')
+  const nextBtn = document.getElementById('nextBtn')
+
+  backBtn.disabled = currentStep === 0
+  backBtn.style.color = currentStep === 0 ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.5)'
+  backBtn.style.cursor = currentStep === 0 ? 'not-allowed' : 'pointer'
+
+  if (currentStep === total - 1) {
+    nextBtn.textContent = '✓ Got it!'
+    nextBtn.className = 'nav-btn done'
+    nextBtn.onclick = closeTutorial
+  } else {
+    nextBtn.textContent = 'Next →'
+    nextBtn.className = 'nav-btn next'
+    nextBtn.onclick = nextStep
+  }
+}
+
+function nextStep() {
+  const total = TUTORIALS[currentSection].steps.length
+  if (currentStep < total - 1) { currentStep++; renderStep() }
+}
+function prevStep() {
+  if (currentStep > 0) { currentStep--; renderStep() }
+}
+function jumpStep(i) {
+  currentStep = i; renderStep()
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (!currentSection) return
+  if (e.key === 'Escape') closeTutorial()
+  if (e.key === 'ArrowRight') nextStep()
+  if (e.key === 'ArrowLeft') prevStep()
+})
+</script>
+</body>
+</html>
